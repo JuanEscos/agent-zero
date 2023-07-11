@@ -6,7 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from lz4.block import compress
 
-from agent0.common.atari_wrappers import make_atari
+# from agent0.common.atari_wrappers import make_atari
+from agent0.common.gym_atari_wrappers import make_atari
 from agent0.deepq.new_config import ExpConfig, AlgoEnum
 from agent0.deepq.new_model import DeepQNet
 
@@ -15,7 +16,8 @@ class Actor:
     def __init__(self, cfg: ExpConfig):
         self.cfg = cfg
         self.envs = make_atari(cfg.env_id, cfg.actor.num_envs)
-        self.obs, _ = self.envs.reset()
+        # self.obs, _ = self.envs.reset()
+        self.obs = self.envs.reset()
         self.model = DeepQNet(cfg).to(cfg.device.value)
 
     def act(self, st, epsilon):
@@ -45,22 +47,32 @@ class Actor:
                 action, qt_max = self.act(st, epsilon)
 
             qs.append(qt_max)
-            obs_next, reward, terminal, truncated, info = self.envs.step(action)
-
-            done = np.logical_and(terminal, np.logical_not(truncated))
-            for st, at, rt, dt, st_next in zip(
-                self.obs, action, reward, done, obs_next
+            # obs_next, reward, terminal, truncated, info = self.envs.step(action)
+            # done = np.logical_and(terminal, np.logical_not(truncated))
+            # for st, at, rt, dt, st_next in zip(
+            #     self.obs, action, reward, done, obs_next
+            # ):
+            #     data.append(
+            #         (compress(np.concatenate((st, st_next), axis=0)), at, rt, dt)
+            #     )
+            obs_next, reward, terminal, info = self.envs.step(action)
+            for st, at, rt, dt, st_next, inf in zip(
+                self.obs, action, reward, terminal, obs_next, info
             ):
+                if 'counter' in inf and dt:
+                    dt = not dt
                 data.append(
                     (compress(np.concatenate((st, st_next), axis=0)), at, rt, dt)
                 )
-
+            for inf in info:
+                if 'real_reward' in inf:
+                    rs.append(inf['real_reward'])
             self.obs = obs_next
 
-            if "final_info" in info:
-                final_infos = info["final_info"][info["_final_info"]]
-                for stat in final_infos:
-                    rs.append(stat["episode"]["r"][0])
+            # if "final_info" in info:
+            #     final_infos = info["final_info"][info["_final_info"]]
+            #     for stat in final_infos:
+            #         rs.append(stat["episode"]["r"][0])
         return data, rs, qs
 
     def close(self):

@@ -60,6 +60,9 @@ class DeepQHead(nn.Module):
             advantage = q - q.mean(dim=-1, keepdim=True)
             q = value + advantage
             return q
+    
+    def qval(self, x):
+        return self.forward(x)
 
 class C51Head(nn.Module):
     def __init__(self, act_dim: int, feat_dim: int, dueling: bool, cfg: C51Config):
@@ -97,7 +100,7 @@ class C51Head(nn.Module):
             q = value + advantage
             return q        
 
-    def qvals(self, x):
+    def qval(self, x):
         q_dist = self.forward(x)
         return q_dist.softmax(dim=-1).mul(self.atoms).sum(dim=-1)
 
@@ -134,11 +137,6 @@ class DeepQNet(nn.Module):
 
     def qval(self, x):
         x = self.encoder(x)
-        if self.algo == AlgoEnum.dqn.value:
-            return self.head(x)
-        elif self.algo == AlgoEnum.c51.value:
-            return self.head.qvals(x)
-        else:
-            raise NotImplementedError(self.algo)
-    
+        return self.head.qval()
+
 
