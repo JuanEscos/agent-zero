@@ -438,40 +438,18 @@ class NormalizedEnv(gym.ObservationWrapper):
 
 
 
-def make_dm_atari(game, episode_life=True, clip_rewards=True, frame_stack=4, transpose_image=True, norm_reward=False,
-                   n_step=1, discount=0.99, scale=False, noop_num=None, seed=None, gaussian_reward=False,
-                   state_count=False, record_best_ep=False):
-    assert not (clip_rewards and norm_reward)
+def make_dm_atari(game):
     env = gym.make(f'{game}NoFrameskip-v4')
-    env = NoopResetEnv(env, noop_max=30, noop_num=noop_num)
+    env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=4)
-    if episode_life:
-        env = EpisodicLifeEnv(env)
+    env = EpisodicLifeEnv(env)
     if 'FIRE' in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
     env = WarpFrame(env)
-    if transpose_image:
-        env = TransposeImage(env)
-    if scale:
-        env = ScaledFloatFrame(env)
-    if frame_stack > 1:
-        env = FrameStack(env, frame_stack)
-    if state_count:
-        env = StateCountEnv(env)
+    env = TransposeImage(env)
+    env = FrameStack(env, 4)
     env = RewardStatEnv(env)
-    if record_best_ep:
-        env = EpRecordEnv(env)
-
-    if clip_rewards:
-        env = ClipRewardEnv(env)
-    if norm_reward:
-        env = NormReward(env)
-    if gaussian_reward:
-        env = GaussianReward(env)
-    if n_step > 1:
-        env = NStepEnv(env, n_step, discount)
-    if seed is not None:
-        env.seed(seed)
+    env = ClipRewardEnv(env)
     return env
 
 def make_atari(env_id, num_envs):
