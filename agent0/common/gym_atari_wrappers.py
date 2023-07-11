@@ -476,7 +476,8 @@ def make_dm_atari(game, episode_life=True, clip_rewards=True, frame_stack=4, tra
 
 def make_atari(env_id, num_envs):
     from agent0.common.vec_env import ShmemVecEnv
-    from gym.spaces import MultiDiscrete, Box
+    from gym.spaces import Box
+    from gymnasium.spaces import MultiDiscrete
     envs = ShmemVecEnv([lambda : make_dm_atari(env_id) for _ in range(num_envs)], context='spawn')
     envs.action_space = MultiDiscrete([envs.action_space.n for _ in range(num_envs)])
     envs.observation_space = Box(low=0, high=255, shape=(1, *envs.observation_space.shape))

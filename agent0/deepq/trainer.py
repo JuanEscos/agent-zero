@@ -184,4 +184,5 @@ class Trainer(tune.Trainable, ABC):
         return True
 
     def cleanup(self):
-        ray.get([a.close_envs.remote() for a in self.actors])
+        for a in self.actors:
+            a.close_envs()
