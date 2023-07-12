@@ -14,7 +14,7 @@ DeviceEnum = Enum("Device", {"cuda": "cuda", "cpu": "cpu"})
 
 @dataclass
 class C51Config:
-    atoms: int = 51
+    num_atoms: int = 51
     vmax: float = 10
     vmin: float = -10
 
@@ -30,7 +30,6 @@ class LearnerConfig:
     dueling_head: bool = False
 
     c51: C51Config = field(default_factory=C51Config)
-
 
     
 @dataclass

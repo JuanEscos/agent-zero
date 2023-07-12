@@ -128,13 +128,13 @@ class Learner:
 
             lo, up = base.floor().long(), base.ceil().long()
             lo[(up > 0) * (lo == up)] -= 1
-            up[(lo < (cfg.atoms - 1)) * (lo == up)] += 1
+            up[(lo < (cfg.num_atoms - 1)) * (lo == up)] += 1
 
             target_prob = torch.zeros_like(prob_next)
             offset = torch.linspace(
-                0, ((self.cfg.learner.batch_size - 1) * cfg.atoms), self.cfg.learner.batch_size
+                0, ((self.cfg.learner.batch_size - 1) * cfg.num_atoms), self.cfg.learner.batch_size
             ).to(self.cfg.device.value)
-            offset = offset.view(-1, 1).expand(self.cfg.learner.batch_size, cfg.atoms).long()
+            offset = offset.view(-1, 1).expand(self.cfg.learner.batch_size, cfg.num_atoms).long()
             
             target_prob.view(-1).index_add_(
                 0, (lo + offset).view(-1), (prob_next * (up.float() - base)).view(-1)

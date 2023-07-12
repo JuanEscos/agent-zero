@@ -70,17 +70,17 @@ class C51Head(nn.Module):
         self.first_dense = nn.Linear(feat_dim, 512)
         self.first_dense.apply(lambda m: init(m, nn.init.calculate_gain("relu")))
 
-        self.q_head = nn.Linear(512, act_dim * cfg.atoms)
+        self.q_head = nn.Linear(512, act_dim * cfg.num_atoms)
         self.q_head.apply(lambda m: init(m, 0.01))
         self.register_buffer(
             "atoms",
-            torch.linspace(cfg.vmin, cfg.vmax, cfg.atoms),
+            torch.linspace(cfg.vmin, cfg.vmax, cfg.num_atoms),
         )
         self.atoms = self.atoms.view(1, 1, -1)
 
-        self.delta = (cfg.vmax - cfg.vmin) / (cfg.atoms - 1)
+        self.delta = (cfg.vmax - cfg.vmin) / (cfg.num_atoms - 1)
         if dueling:
-            self.value_head = nn.Linear(512, cfg.atoms)
+            self.value_head = nn.Linear(512, cfg.num_atoms)
             self.value_head.apply(lambda m: init(m, 1.0))
         else:
             self.value_head = None
