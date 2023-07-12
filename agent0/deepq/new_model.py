@@ -137,6 +137,6 @@ class DeepQNet(nn.Module):
 
     def qval(self, x):
         x = self.encoder(x)
-        return self.head.qval()
+        return self.head.qval(x)
 
 
